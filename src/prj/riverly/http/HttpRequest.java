@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import prj.riverly.rest.RestClient;
-
 public class HttpRequest extends HttpMessage {
 
 	private HashMap<String, Object> parameter;
@@ -38,7 +36,7 @@ public class HttpRequest extends HttpMessage {
 		
 		protected HttpRequestBuilder(HttpClient httpClient) {
 			this.httpClient = httpClient;
-			this.protocol = httpClient.protocol();
+			this.protocol = httpClient.getProtocol();
 		}
 				
 		public HttpRequestBuilder method(String method) {

@@ -1,47 +1,73 @@
 package prj.riverly.rest;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.net.ConnectException;
+import java.net.HttpURLConnection;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
-import prj.riverly.http.HttpClient;
-import prj.riverly.http.HttpResponse;
-import prj.riverly.http.protocol.HttpMethod;
+import prj.riverly.common.HttpUrlClient;
 import prj.riverly.http.protocol.Protocol;
 import prj.riverly.parser.JsonMapper;
 import prj.riverly.rest.RestRequest.RestRequestBuilder;
+import prj.riverly.rest.RestResponse.RestResponseBuilder;
+import prj.riverly.thread.RequestThreadPool;
 
-public class RestClient extends HttpClient {
+public class RestClient extends HttpUrlClient {
 
 	private JsonMapper jsonMapper = JsonMapper.getInstance();
 				
 	public RestClient(){
-		super();
 		defaultHeaders.put("Content-Type", "application/json");
 	}
 	
 	public RestClient(Protocol protocol){
-		super(protocol);
 		defaultHeaders.put("Content-Type", "application/json");
 	}	
 	
-	@Override
 	public RestRequestBuilder request() {
 		return RestRequest.builder(this);
 	}
 	
+	public Future<RestResponse> asyncCall(RestRequest restRequest) {
+		return RequestThreadPool.getInstance().task(() -> {
+			return call(restRequest);
+		});
+	}
+	
 	public RestResponse call(RestRequest restRequest) throws IOException{
-		HttpResponse response = super.call(restRequest);
+		String url = restRequest.url();
+		String parameter = getQuery(restRequest.parameter());
+		String method = restRequest.method();
+		Map<String, List<String>> headers = restRequest.headers();
+		String data = restRequest.body();
 		
-		return RestResponse.builder()
-		.httpResponse(response)
-		.data(jsonMapper.toMap(response.body()))
-		.build();
+		HttpURLConnection conn = super.call(url, method, parameter, headers, data);
+		
+		RestResponseBuilder restResponseBuilder = RestResponse.builder()
+				.protocol(this.protocol.name())
+				.version(restRequest.version())
+				.url(url.toString())
+				.method(method);
+		
+		try {
+			int status = conn.getResponseCode();
+			boolean success = status < HttpURLConnection.HTTP_BAD_REQUEST;
+			
+			String response = toString(conn.getInputStream());
+			String msg = success ? conn.getResponseMessage() : toString(conn.getErrorStream());
+			
+			return restResponseBuilder.success(success)
+					.status(status)
+					.msg(msg)
+					.headers(conn.getHeaderFields())
+					.data(success ? jsonMapper.toMap(response) : null)
+					.build();
+					
+		} catch(ConnectException e) {
+			return restResponseBuilder.success(false).build();
+		}
 	}
 	
 }

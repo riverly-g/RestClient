@@ -27,7 +27,7 @@ public class RestRequest extends HttpRequest {
 		return jsonData;
 	}
 	
-	public static class RestRequestBuilder extends HttpRequestBuilder {
+	public static class RestRequestBuilder {
 		private String protocol = "HTTP";
 		private float protocolVersion = 1.1f;
 		private String httpMethod = "GET";
@@ -38,8 +38,8 @@ public class RestRequest extends HttpRequest {
 		private RestClient restClient;
 		
 		private RestRequestBuilder(RestClient restClient) {
-			super(restClient);
 			this.restClient = restClient;
+			this.protocol = restClient.getProtocol();
 		}
 				
 		public RestRequestBuilder method(String method) {
