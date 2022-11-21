@@ -14,8 +14,8 @@ public class RestRequest extends HttpRequest {
 	private Map<String, Object> jsonData;
 	
 	protected RestRequest(String protocol, float protocolVersion, String httpMethod, String requestUrl, 
-			Map<String, List<String>> headers, Map<String, Object> jsonData) {
-		super(protocol, protocolVersion, httpMethod, requestUrl, headers, JsonMapper.getInstance().toJson(jsonData));
+			Map<String, List<String>> headers, Map<String, Object> parameter, Map<String, Object> jsonData) {
+		super(protocol, protocolVersion, httpMethod, requestUrl, headers, parameter, JsonMapper.getInstance().toJson(jsonData));
 		this.jsonData = jsonData;
 	}
 	
@@ -33,6 +33,7 @@ public class RestRequest extends HttpRequest {
 		private String httpMethod = "GET";
 		private String requestUrl = "";
 		private Map<String, List<String>> headers = new HashMap<String, List<String>>();
+		private Map<String, Object> parameter = new HashMap<String, Object>();
 		private Map<String, Object> jsonData = new HashMap<String, Object>();
 		
 		private RestClient restClient;
@@ -70,6 +71,18 @@ public class RestRequest extends HttpRequest {
 			return this;
 		}
 		
+		public RestRequestBuilder parameter(String key, Object value) {
+			if(this.parameter != null) {
+				this.parameter.put(key, value);
+			}
+			return this;
+		}
+		
+		public RestRequestBuilder parameter(Map<String, Object> parameter) {
+			if(parameter != null) this.parameter = parameter;
+			return this;
+		}
+		
 		public RestRequestBuilder data(String key, Object value) {
 			if(this.jsonData != null) this.jsonData.put(key, value);
 			return this;
@@ -81,7 +94,7 @@ public class RestRequest extends HttpRequest {
 		}
 		
 		public RestRequest build() {
-			return new RestRequest(protocol, protocolVersion, httpMethod, requestUrl, headers, jsonData);
+			return new RestRequest(protocol, protocolVersion, httpMethod, requestUrl, headers, parameter, jsonData);
 		}
 		
 		public RestResponse get() throws IOException {

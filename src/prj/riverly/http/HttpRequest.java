@@ -8,15 +8,16 @@ import java.util.Map;
 
 public class HttpRequest extends HttpMessage {
 
-	private HashMap<String, Object> parameter;
+	private Map<String, Object> parameter;
 	
 	protected HttpRequest(String protocol, float protocolVersion, String httpMethod, String requestUrl, 
-			Map<String, List<String>> headers, String body) {
+			Map<String, List<String>> headers, Map<String, Object> parameter, String body) {
 		
 		super(protocol, protocolVersion, httpMethod, requestUrl, headers, body);
+		this.parameter = parameter;
 	}
 	
-	public HashMap<String, Object> parameter() {
+	public Map<String, Object> parameter() {
 		return parameter;
 	}
 	
@@ -30,6 +31,7 @@ public class HttpRequest extends HttpMessage {
 		private String httpMethod = "GET";
 		private String requestUrl = "";
 		private Map<String, List<String>> headers = new HashMap<String, List<String>>();
+		private Map<String, Object> parameter = new HashMap<String, Object>();
 		private String body = "";
 		
 		private HttpClient httpClient;
@@ -67,13 +69,25 @@ public class HttpRequest extends HttpMessage {
 			return this;
 		}
 		
+		public HttpRequestBuilder parameter(String key, Object value) {
+			if(this.parameter != null) {
+				this.parameter.put(key, value);
+			}
+			return this;
+		}
+		
+		public HttpRequestBuilder parameter(Map<String, Object> parameter) {
+			if(parameter != null) this.parameter = parameter;
+			return this;
+		}
+		
 		public HttpRequestBuilder data(String data) {
 			this.body = data;
 			return this;
 		}
 		
 		public HttpRequest build() {
-			return new HttpRequest(protocol, protocolVersion, httpMethod, requestUrl, headers, body);
+			return new HttpRequest(protocol, protocolVersion, httpMethod, requestUrl, headers, parameter, body);
 		}
 		
 		public HttpResponse get() throws IOException {

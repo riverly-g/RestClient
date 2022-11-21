@@ -23,6 +23,7 @@ public class RestClient extends HttpUrlClient {
 	}
 	
 	public RestClient(Protocol protocol){
+		this.protocol = protocol;
 		defaultHeaders.put("Content-Type", "application/json");
 	}	
 	
@@ -38,7 +39,7 @@ public class RestClient extends HttpUrlClient {
 	
 	public RestResponse call(RestRequest restRequest) throws IOException{
 		String url = restRequest.url();
-		String parameter = getQuery(restRequest.parameter());
+		Map<String, Object> parameter = restRequest.parameter();
 		String method = restRequest.method();
 		Map<String, List<String>> headers = restRequest.headers();
 		String data = restRequest.body();

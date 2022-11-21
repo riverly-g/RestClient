@@ -24,8 +24,19 @@ public class HttpUrlClient {
 	
 	protected Map<String, String> defaultHeaders = new HashMap<String, String>();	
 	
-	protected HttpURLConnection call(String url, String method, String queryString, Map<String, List<String>> headers, String body) throws IOException{		
-		URL requestUrl = new URL(getUrl(url));
+	protected HttpURLConnection call(String url, String method, Map<String, Object> parameter, Map<String, List<String>> headers, String body) throws IOException{
+		String uri = url;
+		String queryString = getQuery(parameter);
+		
+		if(queryString != null) {
+			if (uri.contains("?")) {
+				uri += "&" + queryString;
+			} else {
+				uri += "?" + queryString;
+			}
+		}
+		
+		URL requestUrl = new URL(getUrl(uri));
 		HttpURLConnection conn = (HttpURLConnection) requestUrl.openConnection();
 		
 		conn.setRequestMethod(method);
@@ -68,9 +79,11 @@ public class HttpUrlClient {
 		
 		if(baseUrl != null && baseUrl != "") {
 			sb.append(baseUrl);
+		} else {
+			sb.append(protocol.getProtocol());
 		}
 		
-		if(url.length() > 0 && url.charAt(0) != '/') {
+		if(sb.charAt(sb.length()-1) != '/' && url.length() > 0 && url.charAt(0) != '/') {
 			sb.append('/');
 		}
 		

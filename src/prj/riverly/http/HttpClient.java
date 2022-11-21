@@ -33,7 +33,7 @@ public class HttpClient extends HttpUrlClient {
 	
 	public HttpResponse call(HttpRequest httpRequest) throws IOException {
 		String url = httpRequest.url();
-		String parameter = getQuery(httpRequest.parameter());
+		Map<String, Object> parameter = httpRequest.parameter();
 		String method = httpRequest.method();
 		Map<String, List<String>> headers = httpRequest.headers();
 		String data = httpRequest.body();
